@@ -76,7 +76,7 @@ def shifted_hill_act(x, X0, n, lam):
     Activating shifted‐Hill:
       H_act(x; X0, n, λ) = λ + (1−λ)/(1 + (x/X0)^n ),  λ > 1.
     """
-    return (lam + (1.0 - lam) / (1.0 + (x / X0)**n))/lam # dividing by lambda as in RACIPE 
+    return lam + (1.0 - lam) / (1.0 + (x / X0)**n)
 
 # =============================================================================
 #  (4) SINGLE‐PARAMETER‐SET SIMULATION FUNCTION
