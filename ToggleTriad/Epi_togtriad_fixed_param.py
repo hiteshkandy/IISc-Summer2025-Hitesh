@@ -143,9 +143,9 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
             inhib_C = shifted_hill_inhib(A[t], A0C[t], n_AC, lam_AC) * shifted_hill_inhib(B[t], B0C[t], n_BC, lam_BC)
 
             # Multiplicative noise (instead of additive, added at each step instead of at intervals as in the paper), ensuring non negative values using max(0, ...)
-            A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_std * np.sqrt(dt) * np.random.randn())
-            B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_std * np.sqrt(dt) * np.random.randn())
-            C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_std * np.sqrt(dt) * np.random.randn())
+            A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_factor * np.sqrt(dt) * np.random.randn())
+            B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_factor * np.sqrt(dt) * np.random.randn())
+            C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_factor * np.sqrt(dt) * np.random.randn())
 
         A_traj[it] = A
         B_traj[it] = B
