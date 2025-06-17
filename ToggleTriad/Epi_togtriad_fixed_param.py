@@ -129,7 +129,7 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
         A0C[0] = a0_AC; B0C[0] = a0_BC
 
         for t in range(TIME_STEPS-1):
-            # Update thresholds with epigenetic feedback (your formula)
+            # Update thresholds with epigenetic feedback, ensuring non negative values using max(0.001, ...)using 0.001 to avoid division by zero
             B0A[t+1] = max(0.001, B0A[t] + dt * (a0_BA - B0A[t] - alpha_BA * A[t]) / beta)
             C0A[t+1] = max(0.001,C0A[t] + dt * (a0_CA - C0A[t] - alpha_CA * A[t]) / beta)
             A0B[t+1] = max(0.001,A0B[t] + dt * (a0_AB - A0B[t] - alpha_AB * B[t]) / beta)
@@ -142,7 +142,7 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
             inhib_B = shifted_hill_inhib(A[t], A0B[t], n_AB, lam_AB) * shifted_hill_inhib(C[t], C0B[t], n_CB, lam_CB)
             inhib_C = shifted_hill_inhib(A[t], A0C[t], n_AC, lam_AC) * shifted_hill_inhib(B[t], B0C[t], n_BC, lam_BC)
 
-            # Multiplicative noise (instead of additive, added at each step instead of at intervals as in the paper)
+            # Multiplicative noise (instead of additive, added at each step instead of at intervals as in the paper), ensuring non negative values using max(0, ...)
             A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_std * np.sqrt(dt) * np.random.randn())
             B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_std * np.sqrt(dt) * np.random.randn())
             C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_std * np.sqrt(dt) * np.random.randn())
