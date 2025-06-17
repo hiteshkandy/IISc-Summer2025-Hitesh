@@ -78,10 +78,11 @@ param_set_choice = "P6"   # <-- change this as needed ("P1"..."P6")
 N_INIT = 50 #no. of random initial conditions
 TIME_STEPS = 30000
 dt = 0.1
-noise_factor = 3 #noise strength
+sqrt_dt = np.sqrt(dt) # pre computing for efficiency
+noise_factor = 2 #noise strength
 beta = 100.0  # threshold relaxation timescale(as used in the paper(methods section))
 
-# Epigenetic feedback strengths (user input or leave at zero)
+# Epigenetic feedback strengths 
 alpha_BA = 0.5
 alpha_CA = 0
 alpha_AB = 0
@@ -129,13 +130,13 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
         A0C[0] = a0_AC; B0C[0] = a0_BC
 
         for t in range(TIME_STEPS-1):
-            # Update thresholds with epigenetic feedback, ensuring non negative values using max(0.001, ...)using 0.001 to avoid division by zero
-            B0A[t+1] = max(0.001, B0A[t] + dt * (a0_BA - B0A[t] - alpha_BA * A[t]) / beta)
-            C0A[t+1] = max(0.001,C0A[t] + dt * (a0_CA - C0A[t] - alpha_CA * A[t]) / beta)
-            A0B[t+1] = max(0.001,A0B[t] + dt * (a0_AB - A0B[t] - alpha_AB * B[t]) / beta)
-            C0B[t+1] = max(0.001,C0B[t] + dt * (a0_CB - C0B[t] - alpha_CB * B[t]) / beta)
-            A0C[t+1] = max(0.001,A0C[t] + dt * (a0_AC - A0C[t] - alpha_AC * C[t]) / beta)
-            B0C[t+1] = max(0.001,B0C[t] + dt * (a0_BC - B0C[t] - alpha_BC * C[t]) / beta)
+            # Update thresholds with epigenetic feedback, ensuring non negative values using max(0.0001, ...)using 0.0001 to avoid division by zero
+            B0A[t+1] = max(0.0001, B0A[t] + dt * (a0_BA - B0A[t] - alpha_BA * A[t]) / beta)
+            C0A[t+1] = max(0.0001,C0A[t] + dt * (a0_CA - C0A[t] - alpha_CA * A[t]) / beta)
+            A0B[t+1] = max(0.0001,A0B[t] + dt * (a0_AB - A0B[t] - alpha_AB * B[t]) / beta)
+            C0B[t+1] = max(0.0001,C0B[t] + dt * (a0_CB - C0B[t] - alpha_CB * B[t]) / beta)
+            A0C[t+1] = max(0.0001,A0C[t] + dt * (a0_AC - A0C[t] - alpha_AC * C[t]) / beta)
+            B0C[t+1] = max(0.0001,B0C[t] + dt * (a0_BC - B0C[t] - alpha_BC * C[t]) / beta)
 
             # Update gene concentrations
             inhib_A = shifted_hill_inhib(B[t], B0A[t], n_BA, lam_BA) * shifted_hill_inhib(C[t], C0A[t], n_CA, lam_CA)
@@ -143,9 +144,9 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
             inhib_C = shifted_hill_inhib(A[t], A0C[t], n_AC, lam_AC) * shifted_hill_inhib(B[t], B0C[t], n_BC, lam_BC)
 
             # Multiplicative noise (instead of additive, added at each step instead of at intervals as in the paper), ensuring non negative values using max(0, ...)
-            A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_factor * np.sqrt(dt) * np.sqrt(A[t]) * np.random.randn())
-            B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_factor * np.sqrt(dt) * np.sqrt(B[t]) * np.random.randn())
-            C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_factor * np.sqrt(dt) * np.sqrt(C[t]) * np.random.randn())
+            A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_factor * sqrt_dt * np.sqrt(A[t]) * np.random.randn())
+            B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_factor * sqrt_dt * np.sqrt(B[t]) * np.random.randn())
+            C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_factor * sqrt_dt * np.sqrt(C[t]) * np.random.randn())
 
         A_traj[it] = A
         B_traj[it] = B
@@ -182,14 +183,15 @@ if __name__ == "__main__":
 
      # --- PLOT 1 - Time-resolved population distribution ---
 
-    n_cells, n_time = A_traj.shape
+    n_runs, n_time = A_traj.shape
     a_state = np.zeros(n_time)
     b_state = np.zeros(n_time)
     c_state = np.zeros(n_time)
 
     for t in range(n_time):
-        for j in range(n_cells):
+        for j in range(n_runs):
             a = A_traj[j, t]
+            # print(a)
             b = B_traj[j, t]
             c = C_traj[j, t]
             if a > b and a > c:
@@ -201,9 +203,9 @@ if __name__ == "__main__":
             # Ties are ignored
 
     # Convert to percentages
-    a_perc = 100 * a_state / n_cells
-    b_perc = 100 * b_state / n_cells
-    c_perc = 100 * c_state / n_cells
+    a_perc = 100 * a_state / n_runs
+    b_perc = 100 * b_state / n_runs
+    c_perc = 100 * c_state / n_runs
 
     # Plot
     plt.figure(figsize=(8,5))
