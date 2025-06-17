@@ -143,7 +143,7 @@ def simulate_triad(N_INIT, TIME_STEPS, dt):
             inhib_B = shifted_hill_inhib(A[t], A0B[t], n_AB, lam_AB) * shifted_hill_inhib(C[t], C0B[t], n_CB, lam_CB)
             inhib_C = shifted_hill_inhib(A[t], A0C[t], n_AC, lam_AC) * shifted_hill_inhib(B[t], B0C[t], n_BC, lam_BC)
 
-            # Multiplicative noise (instead of additive, added at each step instead of at intervals as in the paper), ensuring non negative values using max(0, ...)
+            # Multiplicative noise (added at each step instead of at intervals as in the paper), ensuring non negative values using max(0, ...)
             A[t+1] = max(0, A[t] + dt * (g_A * inhib_A - k_A * A[t]) + noise_factor * sqrt_dt * np.sqrt(A[t]) * np.random.randn())
             B[t+1] = max(0, B[t] + dt * (g_B * inhib_B - k_B * B[t]) + noise_factor * sqrt_dt * np.sqrt(B[t]) * np.random.randn())
             C[t+1] = max(0, C[t] + dt * (g_C * inhib_C - k_C * C[t]) + noise_factor * sqrt_dt * np.sqrt(C[t]) * np.random.randn())
